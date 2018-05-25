@@ -1,4 +1,4 @@
-int led = 9;          
+int led = 7;          
 int brightness = 0;    
 int fadeAmount = 5;    
 

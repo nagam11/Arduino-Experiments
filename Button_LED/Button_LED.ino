@@ -12,7 +12,7 @@ void setup() {
 void loop() {
   buttonState = digitalRead(buttonPin);
 
-  // check if the button is pressed. LOW: pressed, HIGH: pressed
+  // check if the button is pressed. LOW: pressed, HIGH: not pressed
   if (buttonState == LOW) {
     digitalWrite(ledPin, HIGH);
   } else {
