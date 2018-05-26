@@ -23,11 +23,11 @@ int yValue = 0; // variable to store y value
 int notPressed = 0; // variable to store the button's state => 1 if not pressed
 
 void setup() {
-  pinMode(led, OUTPUT);
-  pinMode(led_a, OUTPUT);
-  pinMode(led_b, OUTPUT);
-  pinMode(led_c, OUTPUT);
-  pinMode(led_d, OUTPUT);
+  pinMode(led_firstRow, OUTPUT);
+  pinMode(led_secondRow, OUTPUT);
+  pinMode(led_thirdRow, OUTPUT);
+  pinMode(led_forthRow, OUTPUT);
+  pinMode(led_test, OUTPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   pinMode(buttonPin, INPUT_PULLUP);
