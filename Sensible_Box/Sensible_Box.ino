@@ -1,5 +1,5 @@
 /* Ultrasonic sensor pins */
-const int trigPin = 1;
+const int trigPin = 7;
 const int echoPin = 2;
 /* LED rows pins */
 const int led_firstRow = 3;
@@ -23,6 +23,7 @@ int yValue = 0; // variable to store y value
 int notPressed = 0; // variable to store the button's state => 1 if not pressed
 
 void setup() {
+  Serial.begin(9600);
   pinMode(led_firstRow, OUTPUT);
   pinMode(led_secondRow, OUTPUT);
   pinMode(led_thirdRow, OUTPUT);
@@ -35,7 +36,6 @@ void setup() {
   pinMode(inX, INPUT); // setup x input
   pinMode(inY, INPUT); // setup y input
   pinMode(inPressed, INPUT_PULLUP); // we use a pullup-resistor for the button functionality
-  Serial.begin(9600);
 }
 
 void loop() {
@@ -46,32 +46,31 @@ void loop() {
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distance = (duration / 2) / 29.1;
-  Serial.print(distance);
-  delay(10);
+  delay(100);
   // Correlation of brightness (0-255) and distance of (0-10 cm).
-  brightness = 255 - 25.5 * distance;
+  brightness = (distance <= 10) ? 255 - 25.5 * distance : 0;
 
   // check if the button is pressed (non-continuously). LOW: pressed, HIGH: not pressed
   if (buttonState == HIGH && buttonLastInput == 0) {
-    Serial.print("OFF");
+    Serial.println(" OFF ");
     brightness = 0;
     startLEDs();
   } else if (buttonState == HIGH && buttonLastInput == 1) {
-      delay(30);
+      Serial.println(" Do nothing ");
       startLEDs();
-      delay(30);
+      delay(10);
   } else if (buttonState == LOW) {
     if (buttonLastInput == 0) {
-      Serial.print("TURN ON");
+      Serial.println(" TURN ON ");
       buttonLastInput = 1;
-      delay(30);
       startLEDs();
-      delay(30);
+      delay(10);
      } else {
-      Serial.print("TURN OFF");
+      Serial.println(" TURN OFF ");
       buttonLastInput = 0;
       brightness = 0;
       startLEDs();
+      delay(10);
     }
   }
 }
