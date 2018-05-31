@@ -2,17 +2,18 @@
 const int trigPin = 7;
 const int echoPin = 2;
 /* LED rows pins */
-const int led_firstRow = 3;
-const int led_secondRow = 5;
-const int led_thirdRow = 6;
-const int led_forthRow = 9;
-const int led_test = 10;
+const int led_firstRow = 9;
+const int led_secondRow = 10;
+const int led_thirdRow = 11;
+const int led_forthRow = 12;
+const int led_fifthRow = 13;
 /* Button pins */
 const int buttonPin = 4;
-
+/* Control variables*/
 int brightness = 0;    // how bright the LED is
 int buttonState = 0;   // status of the switch
-int buttonLastInput = 0;
+int buttonLastInput = 0;  // implement non continuous clicking
+int behavioralMode = 0; // 0: Introvert, 1: Extrovert
 
 /*JOYSTICK*/
 const int inX = A0; // analog input for x-axis
@@ -28,7 +29,7 @@ void setup() {
   pinMode(led_secondRow, OUTPUT);
   pinMode(led_thirdRow, OUTPUT);
   pinMode(led_forthRow, OUTPUT);
-  pinMode(led_test, OUTPUT);
+  pinMode(led_fifthRow, OUTPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   pinMode(buttonPin, INPUT_PULLUP);
@@ -46,12 +47,14 @@ void loop() {
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distance = (duration / 2) / 29.1;
-  delay(100);
   // Correlation of brightness (0-255) and distance of (0-10 cm).
   brightness = (distance <= 10) ? 255 - 25.5 * distance : 0;
+  startLEDs();  
+  delay(50);
+  
 
   // check if the button is pressed (non-continuously). LOW: pressed, HIGH: not pressed
-  if (buttonState == HIGH && buttonLastInput == 0) {
+  /*if (buttonState == HIGH && buttonLastInput == 0) {
     Serial.println(" OFF ");
     brightness = 0;
     startLEDs();
@@ -72,7 +75,7 @@ void loop() {
       startLEDs();
       delay(10);
     }
-  }
+  }*/
 }
 
 void startLEDs() {
@@ -80,6 +83,7 @@ void startLEDs() {
   analogWrite(led_secondRow, brightness);
   analogWrite(led_thirdRow, brightness);
   analogWrite(led_forthRow, brightness);
-  analogWrite(led_test, brightness);
+  analogWrite(led_fifthRow, brightness);
 }
+
 
