@@ -2,10 +2,6 @@
 // project: @GestureLamp
 
 /* CONSTANTS */
-// Delay time between loop iterations.
-#define DELAY_TIME 50
-// Maximum Brightness of LEDs.
-#define MAX_BRIGHT 255
 // Pins for LEDs
 #define PIN_RED 9
 #define PIN_GREEN 10
@@ -13,11 +9,11 @@
 // Pins for the ultrasonic sensor
 #define PIN_TRIG 7
 #define PIN_ECHO 2
-// Initial values for ambient mode.
-#define AMBIENT_RED 0
-#define AMBIENT_GREEN 170
-#define AMBIENT_BLUE 170
-// Initial values for normal mode.
+// Delay time between loop iterations.
+#define DELAY_TIME 50
+// Maximum Brightness of LEDs.
+#define MAX_BRIGHT 255
+// Constants for normal mode.
 #define NORMAL_RED 128
 #define NORMAL_GREEN 128
 #define NORMAL_BLUE 128
@@ -40,12 +36,10 @@ enum mode {
 int ambient_red = 0;
 int ambient_green = 170;
 int ambient_blue = 170;
-
 // Indicates whether a color is incrementing (1) or decrementing (0).
 int incR = 1;
 int incG = 1;
 int incB = 0;
-
 // Initial values for fading mode.
 int fadeAmount = 5;
 //---------------------------------------------------------------------//
@@ -135,6 +129,11 @@ void loop() {
   delay(DELAY_TIME);
 }
 
+/* TRANSITION MODES */
+void normalTransition() {
+  setColor(NORMAL_RED, NORMAL_GREEN, NORMAL_BLUE);
+}
+
 void ambientTransition() {
   if (ambient_red >= MAX_BRIGHT)
     incR = 0;
@@ -165,7 +164,7 @@ void ambientTransition() {
 }
 
 void blinkTransition() {
-  setColor(255,255,255);
+  setColor(MAX_BRIGHT,MAX_BRIGHT,MAX_BRIGHT);
   delay(500);
   reset();
   delay(500);
@@ -177,22 +176,11 @@ void fadeTransition() {
   brightness = brightness + fadeAmount;
 
   // reverse the direction of the fading at the ends of the fade:
-  if (brightness <= 0 || brightness >= 255) {
+  if (brightness <= 0 || brightness >= MAX_BRIGHT) {
     fadeAmount = -fadeAmount;
   }
   // wait for 30 milliseconds to see the dimming effect
   delay(30);
-}
-
-void normalTransition() {
-  setColor(NORMAL_RED, NORMAL_GREEN, NORMAL_BLUE);
-}
-
-// Reset the brightness of all LEDs.
-void reset() {
-  analogWrite(PIN_RED, 0);
-  analogWrite(PIN_GREEN, 0);
-  analogWrite(PIN_BLUE, 0);
 }
 
 // Sets the output voltage on the LED pins.
@@ -202,3 +190,9 @@ void setColor(int red,int green, int blue) {
   analogWrite(PIN_BLUE, blue);
 }
 
+// Reset the brightness of all LEDs.
+void reset() {
+  analogWrite(PIN_RED, 0);
+  analogWrite(PIN_GREEN, 0);
+  analogWrite(PIN_BLUE, 0);
+}
