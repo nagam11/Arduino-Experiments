@@ -29,8 +29,13 @@ enum mode {
   blinking,
   disco
 };
+// LED colors
+enum led {
+  red,
+  green,
+  blue,
+};
 //---------------------------------------------------------------------//
-
 /* AMBIENT MODE VARIABLES */
 // The initial values of each color for ambient mode.
 int ambient_red = 0;
@@ -44,9 +49,10 @@ int incB = 0;
 int fadeAmount = 5;
 //---------------------------------------------------------------------//
 
-/* FADING MODE VARIABLES */
+/* FADING & DISCO MODE VARIABLES */
 // Variable to track the LEDs brightness
 int brightness = 0;
+led disco_CurrentLED = red;
 //---------------------------------------------------------------------//
 
 /* GLOBAL VARIABLES */
@@ -181,6 +187,20 @@ void fadeTransition() {
   }
   // wait for 30 milliseconds to see the dimming effect
   delay(30);
+}
+
+void discoTransition(){
+  switch(disco_CurrentLED) {
+    case red:
+      setColor(MAX_BRIGHT, 0, 0);
+      disco_CurrentLED = green;
+    case: green:
+      setColor(0, MAX_BRIGHT, 0);
+      disco_CurrentLED = blue;
+    case blue:
+      setColor(0, 0, MAX_BRIGHT);
+      disco_CurrentLED = red;
+  }
 }
 
 // Sets the output voltage on the LED pins.
