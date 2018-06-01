@@ -83,7 +83,7 @@ void loop() {
   distance = (duration / 2) / 29.1;
   Serial.println(distance);
 
-  if (distance > 0 && distance < 11) {
+  if (distance > 3 && distance < 11) {
     ledMode = allModes[i % 5];
     switch (ledMode) {
       case ambient:
@@ -113,7 +113,11 @@ void loop() {
         delay(1000);
         break;
     }
-  } else {
+  } else if (distance > 0 && distance < 4){
+    ledMode = off;
+    reset();
+    delay(1500);
+  }  else {
     switch (ledMode) {
       case ambient:
         Serial.write("ambient ");
@@ -194,7 +198,7 @@ void discoTransition(){
     case red:
       setColor(MAX_BRIGHT, 0, 0);
       disco_CurrentLED = green;
-    case: green:
+    case green:
       setColor(0, MAX_BRIGHT, 0);
       disco_CurrentLED = blue;
     case blue:
