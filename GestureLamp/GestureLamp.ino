@@ -1,94 +1,179 @@
-// Delay time: sets the time in milliseconds between loop iterations.
+// author: @MarlaNa
+// project: @GestureLamp
+
+/* CONSTANTS */
+// Delay time between loop iterations.
 #define DELAY_TIME 50
-// Maximum Brightness: the maximum level the pins will reach.
+// Maximum Brightness of LEDs.
 #define MAX_BRIGHT 255
-// The pins which each color value is output to.
+// Pins for LEDs
 #define PIN_RED 9
 #define PIN_GREEN 10
 #define PIN_BLUE 11
-// Pin for the photoresistor
-#define PIN_PHOTORESISTOR A0
+// Pins for the ultrasonic sensor
+#define PIN_TRIG 7
+#define PIN_ECHO 2
+// Initial values for ambient mode.
+#define AMBIENT_RED 0
+#define AMBIENT_GREEN 170
+#define AMBIENT_BLUE 170
+// Initial values for normal mode.
+#define NORMAL_RED 128
+#define NORMAL_GREEN 128
+#define NORMAL_BLUE 128
+//---------------------------------------------------------------------//
 
+/* MODES */
 // Lamp Modes that can be changed by the user.
 enum mode {
   off,
+  normal,
   ambient,
   fading,
   blinking,
   disco
 };
+//---------------------------------------------------------------------//
 
-// The initial values of each color.
-  int red = 0;
-  int green = 170;
-  int blue = 170;
+/* AMBIENT MODE VARIABLES */
+// The initial values of each color for ambient mode.
+int ambient_red = 0;
+int ambient_green = 170;
+int ambient_blue = 170;
 
 // Indicates whether a color is incrementing (1) or decrementing (0).
 int incR = 1;
 int incG = 1;
-int incB = 0; 
+int incB = 0;
 
-// LED brightness
-int brightness = 0; 
-// Steps to fade the led 
+// Initial values for fading mode.
 int fadeAmount = 5;
-mode allModes[] = {ambient, fading, blinking, disco};
-// Rotate through different LED modes.
+//---------------------------------------------------------------------//
+
+/* FADING MODE VARIABLES */
+// Variable to track the LEDs brightness
+int brightness = 0;
+//---------------------------------------------------------------------//
+
+/* GLOBAL VARIABLES */
+// Array for changing lamp modes.
+mode allModes[] = {normal, ambient, fading, blinking, disco};
+// Counter for rotating through different LED modes.
 int i = 0;
-mode ledMode;
+// Current (universal) LED mode.
+mode ledMode = normal;
+//---------------------------------------------------------------------//
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(PIN_RED, OUTPUT);
+  pinMode(PIN_GREEN, OUTPUT);
+  pinMode(PIN_BLUE, OUTPUT);
+  pinMode(PIN_TRIG, OUTPUT);
+  pinMode(PIN_ECHO, INPUT);
+  normalTransition();
+}
+
+void loop() {
+  long duration, distance;
+  digitalWrite(PIN_TRIG, HIGH);
+  delayMicroseconds(1000);
+  digitalWrite(PIN_TRIG, LOW);
+  duration = pulseIn(PIN_ECHO, HIGH);
+  distance = (duration / 2) / 29.1;
+  Serial.println(distance);
+
+  if (distance > 0 && distance < 11) {
+    ledMode = allModes[i % 5];
+    switch (ledMode) {
+      case ambient:
+        Serial.write("ambient ");
+        delay(1000);        
+        ambientTransition();
+        i++;
+        delay(1000);
+        break;
+      case fading:
+        Serial.write("fade ");
+        delay(1000);
+        fadeTransition();
+        i++;
+        delay(1000);
+        break;
+      case blinking:
+        Serial.write("blinking ");
+        delay(1000);
+        blinkTransition();
+        i++;
+        delay(1000);
+        break;
+      default:
+        ledMode = normal;
+        i++;
+        delay(1000);
+        break;
+    }
+  } else {
+    switch (ledMode) {
+      case ambient:
+        Serial.write("ambient ");
+        ambientTransition();
+        break;
+      case fading:
+        Serial.write("fade ");
+        fadeTransition();
+        break;
+      case blinking:
+        Serial.write("blinking ");
+        blinkTransition();
+        break;
+      default:
+        ledMode = normal;
+        break;
+    }
+  }
+  delay(DELAY_TIME);
+}
 
 void ambientTransition() {
-  if (red >= MAX_BRIGHT)
+  if (ambient_red >= MAX_BRIGHT)
     incR = 0;
-  else if (red <= 0)
+  else if (ambient_red <= 0)
     incR = 1;
-  if (green >= MAX_BRIGHT)
+  if (ambient_green >= MAX_BRIGHT)
     incG = 0;
-  else if (green <= 0)
+  else if (ambient_green <= 0)
     incG = 1;
-  if (blue >= MAX_BRIGHT)
+  if (ambient_blue >= MAX_BRIGHT)
     incB = 0;
-  else if (blue <= 0)
+  else if (ambient_blue <= 0)
     incB = 1;
-  
-  if (incR)
-    red++;
-  else
-    red--;
-  if(incG)
-    green++;
-  else
-    green--;
-  if(incB)
-    blue++;
-  else
-    blue--;
 
-  setColor();
+  if (incR)
+    ambient_red++;
+  else
+    ambient_red--;
+  if (incG)
+    ambient_green++;
+  else
+    ambient_green--;
+  if (incB)
+    ambient_blue++;
+  else
+    ambient_blue--;
+  setColor(ambient_red, ambient_green, ambient_blue);
 }
 
 void blinkTransition() {
-  for(int i = 0; i < 4; i++){
-    red = 255;
-    green = 255;
-    blue = 255;
-    setColor();
-    delay(2000); 
-
-    red = 0;
-    green = 0;
-    blue = 0;
-    setColor();
-    delay(500);
-  }
+  setColor(255,255,255);
+  delay(500);
+  reset();
+  delay(500);
 }
 
 void fadeTransition() {
-  red = brightness;
-  green = brightness;
-  blue = brightness;
-  setColor();
-   // change the brightness for next time through the loop:
+  setColor(brightness, brightness, brightness);
+  // change the brightness for next time
   brightness = brightness + fadeAmount;
 
   // reverse the direction of the fading at the ends of the fade:
@@ -99,6 +184,10 @@ void fadeTransition() {
   delay(30);
 }
 
+void normalTransition() {
+  setColor(NORMAL_RED, NORMAL_GREEN, NORMAL_BLUE);
+}
+
 // Reset the brightness of all LEDs.
 void reset() {
   analogWrite(PIN_RED, 0);
@@ -107,73 +196,9 @@ void reset() {
 }
 
 // Sets the output voltage on the LED pins.
-void setColor() {
+void setColor(int red,int green, int blue) {
   analogWrite(PIN_RED, red);
   analogWrite(PIN_GREEN, green);
   analogWrite(PIN_BLUE, blue);
 }
 
-void setup() {
-  Serial.begin(9600);
-  pinMode(PIN_RED, OUTPUT);
-  pinMode(PIN_GREEN, OUTPUT);
-  pinMode(PIN_BLUE, OUTPUT);
-  pinMode(PIN_PHOTORESISTOR, INPUT);
-  ledMode = off;
-  reset();
-}
-
-void loop() {
-  int pRValue = analogRead(PIN_PHOTORESISTOR);
-  Serial.println(analogRead(pRValue));
-  if (pRValue < 25) {
-    Serial.println(analogRead(pRValue));
-    ledMode = allModes[i%3];
-    switch (ledMode) {
-      case ambient: 
-        Serial.write("ambient ");         
-        ambientTransition();
-        i++;
-        delay(2000);
-        break;
-      case fading:
-        Serial.write("fade ");
-        fadeTransition();        
-        i++;
-        delay(2000);
-        break;
-      case blinking:
-        Serial.write("blinking ");
-        blinkTransition();        
-        i++;
-        delay(2000);
-        break;
-      default: 
-        ledMode = off;
-        reset();
-        i++;
-        delay(3000);
-        break;
-    }
-  } else {
-    switch (ledMode) {
-      case ambient: 
-        Serial.write("ambient ");
-        ambientTransition();      
-        break;
-      case fading:
-        Serial.write("fade ");
-        fadeTransition();  
-        break;
-      case blinking:
-        Serial.write("blinking ");
-        blinkTransition();      
-        break;
-      default: 
-        ledMode = off;
-        reset();       
-        break;
-    }
-  }
-  delay(DELAY_TIME);
-}
