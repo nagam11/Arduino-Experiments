@@ -83,57 +83,76 @@ void loop() {
   distance = (duration / 2) / 29.1;
   Serial.println(distance);
 
-  if (distance > 3 && distance < 11) {
+  if (distance > 0 && distance < 6) {
+    ledMode = off;
+    Serial.write("TURN OFF ");
+    reset();
+    i = 0;
+    delay(3000);
+  }
+  if (distance > 5 && distance < 21) {
     ledMode = allModes[i % 5];
     switch (ledMode) {
       case ambient:
-        Serial.write("ambient ");
-        delay(1000);        
+        Serial.write("Ambient mode. ");
+        delay(1000);
         ambientTransition();
         i++;
         delay(1000);
         break;
       case fading:
-        Serial.write("fade ");
+        Serial.write("Fade mode. ");
         delay(1000);
         fadeTransition();
         i++;
         delay(1000);
         break;
       case blinking:
-        Serial.write("blinking ");
+        Serial.write("Blinking mode. ");
         delay(1000);
         blinkTransition();
         i++;
         delay(1000);
         break;
+      case disco:
+        Serial.write("Disco mode. ");
+        delay(1000);
+        discoTransition();
+        i++;
+        delay(1000);
+        break;
       default:
-        ledMode = normal;
+        ledMode = normal; 
+        Serial.write("Normal mode. ");        
+        normalTransition();
         i++;
         delay(1000);
         break;
     }
-  } else if (distance > 0 && distance < 4){
-    ledMode = off;
-    reset();
-    delay(1500);
-  }  else {
+  } else {
     switch (ledMode) {
       case ambient:
-        Serial.write("ambient ");
+        Serial.write("Ambient mode. ");
         ambientTransition();
         break;
       case fading:
-        Serial.write("fade ");
+        Serial.write("Fade mode. ");
         fadeTransition();
         break;
       case blinking:
-        Serial.write("blinking ");
+        Serial.write("Blinking mode. ");
         blinkTransition();
         break;
-      default:
-        ledMode = normal;
+      case disco:
+        Serial.write("Disco mode. ");        
+        discoTransition();
         break;
+      default:
+        if (ledMode == normal){           
+          Serial.write("Normal mode ");   
+          normalTransition();
+          break;
+        }
     }
   }
   delay(DELAY_TIME);
@@ -174,10 +193,10 @@ void ambientTransition() {
 }
 
 void blinkTransition() {
-  setColor(MAX_BRIGHT,MAX_BRIGHT,MAX_BRIGHT);
-  delay(500);
+  setColor(MAX_BRIGHT, MAX_BRIGHT, MAX_BRIGHT);
+  delay(200);
   reset();
-  delay(500);
+  delay(200);
 }
 
 void fadeTransition() {
@@ -193,22 +212,30 @@ void fadeTransition() {
   delay(30);
 }
 
-void discoTransition(){
-  switch(disco_CurrentLED) {
+void discoTransition() {
+  switch (disco_CurrentLED) {
     case red:
       setColor(MAX_BRIGHT, 0, 0);
       disco_CurrentLED = green;
+      delay(50);
+      break;
     case green:
       setColor(0, MAX_BRIGHT, 0);
       disco_CurrentLED = blue;
+      delay(50);
+      break;
     case blue:
       setColor(0, 0, MAX_BRIGHT);
       disco_CurrentLED = red;
+      delay(50);
+      break;
+    default:
+      delay(50);
   }
 }
 
 // Sets the output voltage on the LED pins.
-void setColor(int red,int green, int blue) {
+void setColor(int red, int green, int blue) {
   analogWrite(PIN_RED, red);
   analogWrite(PIN_GREEN, green);
   analogWrite(PIN_BLUE, blue);
